@@ -1,6 +1,12 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdint.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
+#include "hardware/i2c.h"
+
+#include "font.h"
+#include "ssh1106.h"
 
 #define SENSOR_PIN 14
 
@@ -26,11 +32,25 @@ void gpio_callback(uint gpio, uint32_t events) {
 int main(){
     stdio_init_all();
 
+    i2c_init(i2c_default, 400 * 1000);
+
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+
     gpio_init(SENSOR_PIN);
     gpio_set_dir(SENSOR_PIN, GPIO_IN);
     gpio_pull_up(SENSOR_PIN);
 
     gpio_set_irq_enabled_with_callback(SENSOR_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+
+    SSD1306_Init();
+
+    SSD1306_GotoXY (30, 20);
+    SSD1306_Puts ("Jebac AIR :)", &Font_7x10, 1);
+    SSD1306_UpdateScreen();
+
 
     while(true){
         sleep_ms(500); // Adjust the sleep time as needed

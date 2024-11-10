@@ -10,6 +10,8 @@ pico_sdk_init()
 
 add_executable(${PROJECT_NAME}
   tachometer.c
+  font.c
+  ssh1106.c
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
@@ -17,6 +19,9 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
   pico_stdlib
   hardware_timer
+  hardware_i2c
+  pico_binary_info
+
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
