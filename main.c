@@ -18,6 +18,21 @@ int main(void){
         case measure:
             /*Pomiar i wyswietlanie wyniku na ekranie
             pomiar przez sekunde
+            egde_state = 0;
+            egde_last 
+            start_timer();
+            current_time = get_tick_count();
+            while(true){
+                adc_value = read_adc();
+                edge_state = (adc_value>threshold);
+                if(egde_state && !egde_last_state){
+                    last_time = current_time;
+                    current_time = get_tick_count();
+                    delta_t = current_time - last_time;
+                }
+                egde_last_state = state;
+            
+            }
             oblicz
             wyswielt
             W razie niepewnych pomiarow, komunikat np. out of range*/
