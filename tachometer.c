@@ -119,7 +119,9 @@ int main(){
     // Select ADC input 0 (GP26)
     adc_gpio_init(ADC_PIN);  // Initialize GPIO for ADC function
     adc_select_input(0);
-
+    uint16_t adc_data[SAMPLE_COUNT];
+            char voltage_str[14];  // 5 digits + null terminator
+            char hz_str[15];
     while(true){
         switch (state){
         case init:
@@ -145,42 +147,29 @@ int main(){
             int i = 0;
             int N = 10;
 
-            char voltage_str[6];  // 5 digits + null terminator
             float voltage = 0;
-            for (i; i < N; i++)
-            {
-                uint16_t raw = adc_read();
-                voltage = raw * 3.3 / (1 << 12);
-                if (voltage < thres)
-                {
-                    if (first_edge)
-                    {
-                        start_time = time_us_32();
-                        first_edge = false;
-                    }
-                    else
-                    {
-                        end_time = time_us_32();
-                        first_edge = true;
-                        uint32_t time_diff = end_time - start_time;
-                        if (time_diff > 0)
-                        {
-                            float rpm = 1 / ((float)time_diff / 1000000.0);
-                            // printf("RPM: %.2f\n", rpm);
-                           // sprintf(voltage_str, "%4.2f", rpm);
-                        }
-                    }
-                }
-            }
+
+            uint16_t raw = adc_read();
+            voltage = raw * 3.3 / (1 << 12);
             
+            for (size_t i = 0; i < SAMPLE_COUNT; i++) {
+            adc_data[i] = adc_read();
+            sleep_us(SAMPLING_INTERVAL_US);
+        }
 
-        // Convert raw value to voltage (assuming 3.3V reference)
+             // Calculate frequency
+            float frequency = calculate_frequency(adc_data, SAMPLE_COUNT);
 
-        // Format the voltage as a 5-character string (e.g., "3.30V")
-            sprintf(voltage_str, "%4.2f", voltage);
+            // Convert raw value to voltage (assuming 3.3V reference)
 
+            // Format the voltage as a 5-character string (e.g., "3.30V")
+            sprintf(voltage_str, "U = %4.2f V", voltage);
+            sprintf(hz_str, "f = %4.2f Hz", frequency);
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts (voltage_str, &Font_7x10, 1);
+
+            SSD1306_GotoXY (30, 40);
+            SSD1306_Puts (hz_str, &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
         case calibration:
