@@ -20,22 +20,18 @@ volatile uint32_t start_time = 0;
 volatile uint32_t end_time = 0;
 volatile bool first_edge = true;
 
-void ok_button_callback(uint gpio, uint32_t events) {
-    if (events & GPIO_IRQ_EDGE_FALL) {
-        printf("OK button pressed\n");
+void button_callback(uint gpio, uint32_t events) {
+    if (gpio == OK_BUTTON && events == GPIO_IRQ_EDGE_FALL) {
+        printf("OK button pressed %d\n", gpio);
+        state = calibration;
+    }else if(gpio == SWITCH_BUTTON && events == GPIO_IRQ_EDGE_FALL){
+        printf("Switch button pressed %d\n", gpio);
+        state = measure;
+    }else if(gpio == MENU_BUTTON && events == GPIO_IRQ_EDGE_FALL){
+        printf("Menu button pressed %d\n",gpio);
+        state = menu;   
     }
-}
-
-void switch_button_callback(uint gpio, uint32_t events) {
-    if (events & GPIO_IRQ_EDGE_FALL) {
-        printf("switch button pressed\n");
-    }
-}
-
-void menu_button_callback(uint gpio, uint32_t events) {
-    if (events & GPIO_IRQ_EDGE_FALL) {
-        printf("menu button pressed\n");
-    }
+    sleep_ms(100);
 }
 
 //could be good start to write rpm calc function
@@ -64,11 +60,7 @@ int main(){
     gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-    
-    //pins initialization
-    gpio_init(SENSOR_PIN);
-    gpio_set_dir(SENSOR_PIN, GPIO_IN);
-    gpio_pull_up(SENSOR_PIN);
+
     //button initialization
     gpio_init(OK_BUTTON);
     gpio_set_dir(OK_BUTTON, GPIO_IN);
@@ -83,9 +75,9 @@ int main(){
     gpio_pull_up(MENU_BUTTON);
 
     //interrupt initialization
-    gpio_set_irq_enabled_with_callback(OK_BUTTON, GPIO_IRQ_EDGE_FALL, true, &ok_button_callback);
-    gpio_set_irq_enabled_with_callback(SWITCH_BUTTON, GPIO_IRQ_EDGE_FALL, true, &switch_button_callback);
-    gpio_set_irq_enabled_with_callback(MENU_BUTTON, GPIO_IRQ_EDGE_FALL, true, &menu_button_callback);
+    gpio_set_irq_enabled_with_callback(OK_BUTTON,GPIO_IRQ_EDGE_FALL , true, &button_callback);
+    gpio_set_irq_enabled_with_callback(SWITCH_BUTTON, GPIO_IRQ_EDGE_FALL, true, &button_callback);
+    gpio_set_irq_enabled_with_callback(MENU_BUTTON, GPIO_IRQ_EDGE_FALL, true, &button_callback);
 
     SSD1306_Init();
 
@@ -95,16 +87,15 @@ int main(){
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("INIT", &Font_7x10, 1);
             SSD1306_UpdateScreen();
-            sleep_ms(2000);
-            SSD1306_Clear();        
-            state = measure;
+            SSD1306_Clear();
             break;
         case menu:
-            /*Wybór operacji: pomiar, kalibracja, debug
-            Czekaj do póki nie zostanie wciśnięty przycisk*/
-            //menu_handler();
+            SSD1306_GotoXY (30, 20);
+            SSD1306_Puts ("MENU", &Font_7x10, 1);
+            SSD1306_UpdateScreen();
             break;
         case measure:
+            tight_loop_contents();
             /*Pomiar i wyswietlanie wyniku na ekranie
             pomiar przez sekunde
             oblicz
@@ -115,8 +106,9 @@ int main(){
             SSD1306_UpdateScreen();
             break;
         case calibration:
-            /*Pomiar składowej stałej pochodzącej z oświetlenia w pomieszczeniu
-            Wybranie czy obiekt to czarna tarcza z białym punktem, czy biała z czarnym*/
+            SSD1306_GotoXY (30, 20);
+            SSD1306_Puts ("CALI", &Font_7x10, 1);
+            SSD1306_UpdateScreen();
             break;
         case debug:
             /*

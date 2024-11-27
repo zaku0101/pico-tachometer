@@ -21,6 +21,7 @@ target_link_libraries(${PROJECT_NAME}
   hardware_timer
   hardware_i2c
   pico_binary_info
+  hardware_adc
 
 )
 

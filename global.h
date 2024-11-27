@@ -14,7 +14,7 @@ enum Menu{
     mdebug
 };
 
-enum states state = init;
+volatile enum states state = init;
 char enter = 0;
 char button_next_value = 0;
 char button_enter_value = 0;
