@@ -21,4 +21,6 @@ char button_enter_value = 0;
 enum Menu menu_selection = mmeasure;
 char number_of_menu_options = 3;//measure,calibration,debug
 
+float thres = 1.5;
+
 #endif

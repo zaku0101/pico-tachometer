@@ -22,16 +22,18 @@ volatile bool first_edge = true;
 
 void button_callback(uint gpio, uint32_t events) {
     if (gpio == OK_BUTTON && events == GPIO_IRQ_EDGE_FALL) {
-        printf("OK button pressed %d\n", gpio);
+        printf("OK button pressedx %d\n", gpio);
         state = calibration;
+        SSD1306_Clear();
     }else if(gpio == SWITCH_BUTTON && events == GPIO_IRQ_EDGE_FALL){
-        printf("Switch button pressed %d\n", gpio);
+        printf("Switch button pressedx %d\n", gpio);
         state = measure;
+        SSD1306_Clear();
     }else if(gpio == MENU_BUTTON && events == GPIO_IRQ_EDGE_FALL){
-        printf("Menu button pressed %d\n",gpio);
+        printf("Menu button pressedx %d\n",gpio);
         state = menu;   
+        SSD1306_Clear();
     }
-    sleep_ms(100);
 }
 
 //could be good start to write rpm calc function
@@ -48,6 +50,37 @@ void gpio_callback(uint gpio, uint32_t events) {
             printf("RPM: %.2f\n", rpm);
         }
     }
+}
+#define SAMPLE_COUNT (1000)
+#define SAMPLING_INTERVAL_US 100 
+uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
+
+// Function to calculate frequency
+float calculate_frequency(uint16_t *data, size_t count) {
+    uint16_t min_value = 4095, max_value = 0;
+    int crossings = 0;
+
+    // Find min and max values
+    for (size_t i = 0; i < count; i++) {
+        if (data[i] < min_value) min_value = data[i];
+        if (data[i] > max_value) max_value = data[i];
+    }
+
+    // Calculate floating threshold
+    float threshold = (min_value + max_value) / 2.0;
+
+    // Count threshold crossings (rising edge)
+    for (size_t i = 1; i < count; i++) {
+        if (data[i - 1] < threshold && data[i] >= threshold) {
+            crossings++;
+        }
+    }
+
+    // Calculate frequency
+    float time_interval = count * SAMPLING_INTERVAL_US / 1e6; // Convert microseconds to seconds
+    float frequency = (crossings / 2.0) / time_interval;
+
+    return frequency;
 }
 
 int main(){
@@ -81,31 +114,77 @@ int main(){
 
     SSD1306_Init();
 
+    adc_init();
+
+    // Select ADC input 0 (GP26)
+    adc_gpio_init(ADC_PIN);  // Initialize GPIO for ADC function
+    adc_select_input(0);
+
     while(true){
         switch (state){
         case init:
+            //SSD1306_Clear();
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("INIT", &Font_7x10, 1);
             SSD1306_UpdateScreen();
-            SSD1306_Clear();
             break;
         case menu:
+            //SSD1306_Clear();
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("MENU", &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
         case measure:
+            //SSD1306_Clear();
             tight_loop_contents();
             /*Pomiar i wyswietlanie wyniku na ekranie
             pomiar przez sekunde
             oblicz
             wyswielt
             W razie niepewnych pomiarow, komunikat np. out of range*/
+            int i = 0;
+            int N = 10;
+
+            char voltage_str[6];  // 5 digits + null terminator
+            float voltage = 0;
+            for (i; i < N; i++)
+            {
+                uint16_t raw = adc_read();
+                voltage = raw * 3.3 / (1 << 12);
+                if (voltage < thres)
+                {
+                    if (first_edge)
+                    {
+                        start_time = time_us_32();
+                        first_edge = false;
+                    }
+                    else
+                    {
+                        end_time = time_us_32();
+                        first_edge = true;
+                        uint32_t time_diff = end_time - start_time;
+                        if (time_diff > 0)
+                        {
+                            float rpm = 1 / ((float)time_diff / 1000000.0);
+                            // printf("RPM: %.2f\n", rpm);
+                           // sprintf(voltage_str, "%4.2f", rpm);
+                        }
+                    }
+                }
+            }
+            
+
+        // Convert raw value to voltage (assuming 3.3V reference)
+
+        // Format the voltage as a 5-character string (e.g., "3.30V")
+            sprintf(voltage_str, "%4.2f", voltage);
+
             SSD1306_GotoXY (30, 20);
-            SSD1306_Puts ("MEASURE", &Font_7x10, 1);
+            SSD1306_Puts (voltage_str, &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
         case calibration:
+            //SSD1306_Clear();
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("CALI", &Font_7x10, 1);
             SSD1306_UpdateScreen();
@@ -119,5 +198,6 @@ int main(){
         default:
             break;
         };
+        sleep_ms(10);
     }
 }
