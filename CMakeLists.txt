@@ -22,7 +22,8 @@ target_link_libraries(${PROJECT_NAME}
   hardware_i2c
   pico_binary_info
   hardware_adc
-
+  hardware_uart
+  hardware_dma
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
