@@ -1,22 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from calculate_frequency import calculate_frequency, fir_filter
+from calculate_frequency import calculate_frequency, fir_filter, iir_filter, freq_fft_interpolate
 
 # Parameters
-fp = 48e3          # Sampling frequency
+fp = 1e3          # Sampling frequency
 fmax = 200         # Maximum frequency of interest
-fmin = 5
+fmin = 1
 min_okres = 3      # Minimum number of cycles
 N = int(min_okres * fp / fmin)  # Total number of samples
+print(f"Liczba probek: {N}")
 
 # Time vector
 t = np.linspace(0, (N - 1) / fp, N)
 
 # Input signal
-freq =10
+freq = 1.2
 y = 5 - np.exp(-t) + np.sin(freq * 2 * np.pi * t + np.pi/3) + (1 / 8) * np.sin(freq*3 * 2 * np.pi * t) + 0.5 * np.random.randn(N)
 y = y * 2048  # Scale the signal
-y = 2048/np.e*np.exp(np.pow(np.sin(2 * np.pi * freq *t),1)) + (1/8) * np.sin(freq*3 * 2 * np.pi * t) + 2048*0.1 * np.random.randn(N)
+# y = 2048/np.e*np.exp(np.pow(np.sin(2 * np.pi * freq *t),1)) + (1/8) * np.sin(freq*3 * 2 * np.pi * t) + 2048*0.1 * np.random.randn(N)
 
 # Generate sine wave
 sine_wave = np.sin(2 * np.pi * freq * t)
@@ -67,7 +68,7 @@ for i in range (1,N+1):
     y_lp[i-1] = y_temp
 
 ## FIR FIlter
-y_fir = fir_filter(y)
+y_fir = iir_filter(y)
 
 # Binarization of Moving Median Filter
 y_median_min = np.min(y_filtered)
@@ -96,85 +97,89 @@ threshold_fir = (y_fir_min + y_fir_max) / 2.0
 y_fir_binary = y_fir > threshold_fir  # Binarize
 
 
-# Plot results
-plt.figure(figsize=(10, 12))
+#fft interpolation
+f_fft = freq_fft_interpolate(y,fp,N)
+print(f"Frequency fft: {f_fft} Hz")
 
-# Original Signal
-plt.subplot(4, 1, 1)
-plt.plot(t, y, 'r-')
-plt.title('Original Signal')
-plt.xlabel('Time [s]')
-plt.ylabel('Amplitude')
-plt.grid(True)
+# # Plot results
+# plt.figure(figsize=(10, 12))
 
-# Moving Median Filtered Signal and Binarized
-plt.subplot(4, 1, 2)
-plt.plot(t, y_filtered, 'b-', linewidth=1.2, label='Filtered')
-plt.plot(t, y_median_binary * (y_median_max - y_median_min) + y_median_min, 'k-', linewidth=1.2, label='Binarized')
-plt.title('Moving Median Filter - Filtered and Binarized')
-plt.xlabel('Time [s]')
-plt.ylabel('Amplitude')
-plt.legend()
-plt.grid(True)
+# # Original Signal
+# plt.subplot(4, 1, 1)
+# plt.plot(t, y, 'r-')
+# plt.title('Original Signal')
+# plt.xlabel('Time [s]')
+# plt.ylabel('Amplitude')
+# plt.grid(True)
 
-# Leaky Integrator Filtered Signal and Binarized
-plt.subplot(4, 1, 3)
-plt.plot(t, y_leaky, 'g-', linewidth=1.2, label='Filtered')
-plt.plot(t, y_leaky_binary * (y_leaky_max - y_leaky_min) + y_leaky_min, 'k-', linewidth=1.2, label='Binarized')
-plt.title('Leaky Integrator Filter - Filtered and Binarized')
-plt.xlabel('Time [s]')
-plt.ylabel('Amplitude')
-plt.legend()
-plt.grid(True)
+# # Moving Median Filtered Signal and Binarized
+# plt.subplot(4, 1, 2)
+# plt.plot(t, y_fir, 'b-', linewidth=1.2, label='FIR')
+# #plt.plot(t, y_median_binary * (y_median_max - y_median_min) + y_median_min, 'k-', linewidth=1.2, label='Binarized')
+# plt.title('FIR')
+# plt.xlabel('Time [s]')
+# plt.ylabel('Amplitude')
+# plt.legend()
+# plt.grid(True)
 
-plt.subplot(4, 1, 4)
-plt.plot(t, y_lp, 'b-', linewidth=1.2, label='IIR low pass')
+# # Leaky Integrator Filtered Signal and Binarized
+# plt.subplot(4, 1, 3)
+# plt.plot(t, y_leaky, 'g-', linewidth=1.2, label='Filtered')
+# plt.plot(t, y_leaky_binary * (y_leaky_max - y_leaky_min) + y_leaky_min, 'k-', linewidth=1.2, label='Binarized')
+# plt.title('Leaky Integrator Filter - Filtered and Binarized')
+# plt.xlabel('Time [s]')
+# plt.ylabel('Amplitude')
+# plt.legend()
+# plt.grid(True)
 
-# Comparison of Binarized Signals
-plt.figure(figsize=(10, 12))
-plt.plot(t, binary_signal, 'b-', linewidth=1.2, label='Binary ref')
-plt.plot(t, y_leaky_binary, 'g-', linewidth=1.2, label='Leaky Integrator Binarized')
-plt.title('Comparison of Binarized Signals')
-plt.xlabel('Time [s]')
-plt.ylabel('Binary Value')
-plt.legend()
-plt.grid(True)
-
-plt.figure(figsize=(10, 12))
-plt.plot(t, y_lp, 'b-', linewidth=1.2, label='IIR')
-plt.plot(t, y_lp_binary*(y_lp_max-y_lp_min)+y_lp_min, 'g-', linewidth=1.2, label='IIR Binarized')
-plt.title('Comparison of Binarized Signals')
-plt.xlabel('Time [s]')
-plt.ylabel('Binary Value')
-plt.legend()
-plt.grid(True)
+# plt.subplot(4, 1, 4)
+# plt.plot(t, y_lp, 'b-', linewidth=1.2, label='IIR low pass')
+# #plt.plot(t, y_lp*(y_lp_max-y_lp_min)+y_lp_min, 'g-', linewidth=0.2, label='IIR Binarized')
+# # Comparison of Binarized Signals
+# # plt.figure(figsize=(10, 12))
+# # plt.plot(t, binary_signal, 'b-', linewidth=1.2, label='Binary ref')
+# # plt.plot(t, y_leaky_binary, 'g-', linewidth=1.2, label='Leaky Integrator Binarized')
+# # plt.title('Comparison of Binarized Signals')
+# # plt.xlabel('Time [s]')
+# # plt.ylabel('Binary Value')
+# # plt.legend()
+# # plt.grid(True)
 
 # plt.figure(figsize=(10, 12))
-# plt.plot(t, y_fir, 'b-', linewidth=1.2, label='IIR')
-# plt.plot(t, y_fir_binary*(y_fir_max-y_fir_min)+y_fir_min, 'g-', linewidth=1.2, label='IIR Binarized')
+# plt.plot(t, y_lp, 'b-', linewidth=1.2, label='IIR')
+# plt.plot(t, y_lp_binary*(y_lp_max-y_lp_min)+y_lp_min, 'g-', linewidth=1.2, label='IIR Binarized')
 # plt.title('Comparison of Binarized Signals')
 # plt.xlabel('Time [s]')
 # plt.ylabel('Binary Value')
 # plt.legend()
 # plt.grid(True)
 
+# # plt.figure(figsize=(10, 12))
+# # plt.plot(t, y_fir, 'b-', linewidth=1.2, label='FIR')
+# # plt.plot(t, y_fir_binary*(y_fir_max-y_fir_min)+y_fir_min, 'g-', linewidth=1.2, label='IIR Binarized')
+# # plt.title('Comparison of Binarized Signals')
+# # plt.xlabel('Time [s]')
+# # plt.ylabel('Binary Value')
+# # plt.legend()
+# # plt.grid(True)
 
-plt.tight_layout()
-plt.show()
+
+# plt.tight_layout()
+# plt.show()
 
 
-delta_min = 50
-sampling_interval_us = 1 / 48000.0  # 48 kHz
+# delta_min = 50
+# sampling_interval_us = 1 / fp  # 48 kHz
 
-# Calculate frequency
-frequency = calculate_frequency(y_leaky, delta_min, sampling_interval_us)
-print(f"Calculated Frequency leaky: {frequency} Hz\n\n")
+# # Calculate frequency
+# frequency = calculate_frequency(y_leaky, delta_min, sampling_interval_us)
+# print(f"Calculated Frequency leaky: {frequency} Hz\n\n")
 
-frequency = calculate_frequency(y_lp, delta_min, sampling_interval_us)
-print(f"Calculated Frequency IIR: {frequency} Hz\n\n")
+# frequency = calculate_frequency(y_lp, delta_min, sampling_interval_us)
+# print(f"Calculated Frequency IIR: {frequency} Hz\n\n")
 
-# frequency = calculate_frequency(y_filtered, delta_min, sampling_interval_us)
-# print(f"Calculated Frequency median: {frequency} Hz")
+# # frequency = calculate_frequency(y_filtered, delta_min, sampling_interval_us)
+# # print(f"Calculated Frequency median: {frequency} Hz")
 
-frequency = calculate_frequency(binary_signal*4096, delta_min, sampling_interval_us)
-print(f"Calculated Frequency ref: {frequency} Hz")
+# frequency = calculate_frequency(binary_signal*4096, delta_min, sampling_interval_us)
+# print(f"Calculated Frequency ref: {frequency} Hz")
