@@ -3,9 +3,10 @@
 
 #include <inttypes.h>
 #include <stdio.h>
-#include "global.h"
-
-
+//#include "global.h"
+#include "pico/fft.h"
+#define SAMPLING_INTERVAL_US (100)
+#pragma once
 float fft_interpolation_process(uint8_t *capture_buf);
 
 // Function to calculate frequency

@@ -12,22 +12,25 @@ add_executable(${PROJECT_NAME}
   tachometer.c
   font.c
   ssh1106.c
+  calculation.c
+  kiss_fft.c
+  kiss_fftr.c
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
-# Specify the source files for the library
-target_sources(${PROJECT_NAME} INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/kiss_fft.c
-    ${CMAKE_CURRENT_LIST_DIR}/kiss_fftr.c
-    ${CMAKE_CURRENT_LIST_DIR}/pico_tachometer.c
-    ${CMAKE_CURRENT_LIST_DIR}/calculation.c
-)
+# # Specify the source files for the library
+# target_sources(${PROJECT_NAME} INTERFACE
+#     ${CMAKE_CURRENT_LIST_DIR}/kiss_fft.c
+#     ${CMAKE_CURRENT_LIST_DIR}/kiss_fftr.c
+#     ${CMAKE_CURRENT_LIST_DIR}/pico_tachometer.c
+#     ${CMAKE_CURRENT_LIST_DIR}/calculation.c
+# )
 
-# Specify the include directories for the library
-target_include_directories(${PROJECT_NAME} INTERFACE 
-    ${CMAKE_CURRENT_LIST_DIR}/include
-)
+# # Specify the include directories for the library
+# target_include_directories(${PROJECT_NAME} INTERFACE 
+#     ${CMAKE_CURRENT_LIST_DIR}/include
+# )
 
 
 target_link_libraries(${PROJECT_NAME}

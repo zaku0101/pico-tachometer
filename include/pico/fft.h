@@ -2,7 +2,7 @@
 #define FFT_H
 
 #include "pico/stdlib.h"
-#include "pico/kiss_fftr.h"
+#include "kiss_fftr.h"
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 

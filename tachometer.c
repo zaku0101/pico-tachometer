@@ -16,7 +16,7 @@
 
 #include "include/font.h"
 #include "include/ssh1106.h"
-
+#include "include/sine_wave.h"
 
 volatile uint32_t start_time = 0;
 volatile uint32_t end_time = 0;
@@ -25,7 +25,7 @@ volatile bool first_edge = true;
 
 uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
 
-void dma_adc_capture(uint16_t *adc_dma_data);
+void dma_adc_capture(uint8_t *adc_dma_data);
 void config_all(void);
 
 int main(){
@@ -40,14 +40,24 @@ int main(){
     uint16_t raw = 0;
     /// INIT
     config_all();
+
+    printf("Zyje!!!\n");
+    float fft_frequency = 0;
     /// MAIN LOOP
     while(true){
         switch (state){
         case init:
             //SSD1306_Clear();
-            SSD1306_GotoXY (30, 20);
-            SSD1306_Puts ("INIT", &Font_7x10, 1);
-            SSD1306_UpdateScreen();
+            while (1)
+            {
+                fft_frequency = fft_interpolation_process(sine_wave);
+                printf("F: %f\n", fft_frequency);
+                sleep_ms(1000);
+            }
+            
+            // SSD1306_GotoXY (30, 20);
+            // SSD1306_Puts ("INIT", &Font_7x10, 1);
+            // SSD1306_UpdateScreen();
             break;
         case menu:
             //SSD1306_Clear();
@@ -73,7 +83,9 @@ int main(){
              // Calculate frequency
             //float frequency = calculate_frequency(adc_data, SAMPLE_COUNT,50);
             dma_adc_capture(adc_dma_data);
-            float fft_frequency = fft_interpolation_process(adc_dma_data);
+            printf("Jedna z probek: %d\n", sine_wave[3]);
+            fft_frequency = fft_interpolation_process(sine_wave);
+            printf("Frequency: %f\n", fft_frequency);
 
             // Convert raw value to voltage (assuming 3.3V reference)
 
@@ -111,7 +123,7 @@ int main(){
     }    
 }
 
-void dma_adc_capture(uint16_t *adc_dma_data) {
+void dma_adc_capture(uint8_t *adc_dma_data) {
     adc_set_clkdiv(0);
     uint dma_chan = dma_claim_unused_channel(true);
     dma_channel_config cfg = dma_channel_get_default_config(dma_chan);
@@ -138,11 +150,12 @@ void dma_adc_capture(uint16_t *adc_dma_data) {
 
 void config_all(void){
     stdio_init_all();
+    setup_uart();
+    printf("UART INITIALIZED\n");
     i2c_init(i2c_default, 400 * 1000);
     gpio_init_all();
     SSD1306_Init();
     adc_init();   
-    setup_uart();
     adc_gpio_init(ADC_PIN);
     adc_select_input(0);
     
