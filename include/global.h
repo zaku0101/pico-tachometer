@@ -8,8 +8,9 @@
 #define SWITCH_BUTTON 20
 
 /// MEASSURE CONFIG
-#define SAMPLE_COUNT (10000)
-#define SAMPLING_INTERVAL_US (100) 
+#define SAMPLE_COUNT (4096)
+#define SAMPLING_INTERVAL_US (100)
+#define SAMPLING_FREQ 1000 
 
 enum states{
     init,
