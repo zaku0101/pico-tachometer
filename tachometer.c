@@ -28,6 +28,9 @@ uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
 int main(){
     /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
+
+    uint16_t adc_dma_data[SAMPLE_COUNT];
+
     char voltage_str[14];  // 5 digits + null terminator
     char hz_str[15];
     char message[24];
@@ -41,6 +44,17 @@ int main(){
     setup_uart();
     adc_gpio_init(ADC_PIN);
     adc_select_input(0);
+    
+    
+    adc_fifo_setup(
+        true,
+        true,
+        1,
+        false,
+        true
+    );
+    
+
     /// MAIN LOOP
     while(true){
         switch (state){
@@ -107,5 +121,30 @@ int main(){
             break;
         };
         //sleep_ms(1);
-    }
+    }    
+}
+
+void dma_adc_capture(uint16_t *adc_dma_data) {
+    adc_set_clkdiv(0);
+    uint dma_chan = dma_claim_unused_channel(true);
+    dma_channel_config cfg = dma_channel_get_default_config(dma_chan);
+
+    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
+    channel_config_set_read_increment(&cfg, false);
+    channel_config_set_write_increment(&cfg, true);
+
+    channel_config_set_dreq(&cfg, DREQ_ADC);
+
+    dma_channel_configure(dma_chan, &cfg,
+        adc_dma_data,    // dst
+        &adc_hw->fifo,  // src
+        SAMPLE_COUNT,  // transfer count
+        true            // start immediately
+    );
+
+    adc_run(true);
+
+    dma_channel_wait_for_finish_blocking(dma_chan);
+    adc_run(false);
+    adc_fifo_drain();
 }
