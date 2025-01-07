@@ -4,6 +4,10 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include "global.h"
+
+
+float fft_interpolation_process(uint8_t *capture_buf);
+
 // Function to calculate frequency
 inline float calculate_frequency(uint16_t *data, size_t count, uint16_t delta_min) {
     uint16_t min_value = 4095, max_value = 0;

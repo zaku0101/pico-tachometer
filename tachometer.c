@@ -25,36 +25,21 @@ volatile bool first_edge = true;
 
 uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
 
+void dma_adc_capture(uint16_t *adc_dma_data);
+void config_all(void);
+
 int main(){
     /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
 
-    uint16_t adc_dma_data[SAMPLE_COUNT];
+    uint8_t adc_dma_data[SAMPLE_COUNT];
 
     char voltage_str[14];  // 5 digits + null terminator
     char hz_str[15];
     char message[24];
     uint16_t raw = 0;
     /// INIT
-    stdio_init_all();
-    i2c_init(i2c_default, 400 * 1000);
-    gpio_init_all();
-    SSD1306_Init();
-    adc_init();   
-    setup_uart();
-    adc_gpio_init(ADC_PIN);
-    adc_select_input(0);
-    
-    
-    adc_fifo_setup(
-        true,
-        true,
-        1,
-        false,
-        true
-    );
-    
-
+    config_all();
     /// MAIN LOOP
     while(true){
         switch (state){
@@ -78,21 +63,23 @@ int main(){
 
             float voltage = 0;
 
-            raw = adc_read();
-            voltage = raw * 3.3 / (1 << 12);
+            // raw = adc_read();
+            // voltage = raw * 3.3 / (1 << 12);
             
-            for (i; i < SAMPLE_COUNT; i++) {
-                adc_data[i] = adc_read();
-                sleep_us(SAMPLING_INTERVAL_US);
-            }
+            // for (i; i < SAMPLE_COUNT; i++) {
+            //     adc_data[i] = adc_read();
+            //     sleep_us(SAMPLING_INTERVAL_US);
+            // }
              // Calculate frequency
-            float frequency = calculate_frequency(adc_data, SAMPLE_COUNT,50);
+            //float frequency = calculate_frequency(adc_data, SAMPLE_COUNT,50);
+            dma_adc_capture(adc_dma_data);
+            float fft_frequency = fft_interpolation_process(adc_dma_data);
 
             // Convert raw value to voltage (assuming 3.3V reference)
 
             // Format the voltage as a 5-character string (e.g., "3.30V")
             sprintf(voltage_str, "U = %4.2f V", voltage);
-            sprintf(hz_str, "f = %4.2f Hz", frequency);
+            sprintf(hz_str, "f = %4.2f Hz", fft_frequency);
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts (voltage_str, &Font_7x10, 1);
 
@@ -147,4 +134,25 @@ void dma_adc_capture(uint16_t *adc_dma_data) {
     dma_channel_wait_for_finish_blocking(dma_chan);
     adc_run(false);
     adc_fifo_drain();
+}
+
+void config_all(void){
+    stdio_init_all();
+    i2c_init(i2c_default, 400 * 1000);
+    gpio_init_all();
+    SSD1306_Init();
+    adc_init();   
+    setup_uart();
+    adc_gpio_init(ADC_PIN);
+    adc_select_input(0);
+    
+    
+    adc_fifo_setup(
+        true,
+        true,
+        1,
+        false,
+        true
+    );
+
 }
