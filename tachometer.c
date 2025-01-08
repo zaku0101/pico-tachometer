@@ -31,7 +31,7 @@ void config_all(void);
 int main(){
     /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
-
+    
     uint8_t adc_dma_data[SAMPLE_COUNT];
 
     char voltage_str[14];  // 5 digits + null terminator
