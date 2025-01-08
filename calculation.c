@@ -10,7 +10,7 @@
 #endif
 
 #define P (3)
-#define SAMPLING_FREQ (1000)
+#define SAMPLING_FREQ (1000.0)
 #define SAMPLE_COUNT (2048)
 
 static float window[SAMPLE_COUNT];
@@ -72,8 +72,8 @@ float fft_interpolation_process(uint8_t *capture_buf) {
     X2 = fft_out[max_index];
     X3 = fft_out[max_index - 2];
 
-    float l1 = (float)max_index/2;
-    float m = (float)P;
+    double l1 = (double)max_index/2;
+    double m = (double)P;
     kiss_fft_cpx epsilon;
     kiss_fft_cpx epsilon_div;
     epsilon.r = (m + 2) * ((m + 2 + 4 * l1) * X1.r  +  2 * m * X2.r  +  (m + 2 - 4 * l1) * X3.r);
@@ -93,11 +93,11 @@ float fft_interpolation_process(uint8_t *capture_buf) {
 
     printf("k = %f, Epsilon: %f\n", l1, eps_out);
 
-    float freq = (l1*l1 + eps_out) * SAMPLING_FREQ / (2*SAMPLE_COUNT);
-
-    printf("Frequency: %f Hz\n", sqrtf(freq));
+    double freq = sqrtf(l1*l1 + eps_out);
+    freq *= SAMPLING_FREQ / (SAMPLE_COUNT);
+    printf("Frequency: %f Hz\n", freq);
     
     kiss_fft_free(cfg);
-    return l1 * SAMPLING_FREQ / (SAMPLE_COUNT);
+    return l1 * SAMPLING_FREQ / (double)(SAMPLE_COUNT);
   
 }
