@@ -91,13 +91,13 @@ float fft_interpolation_process(uint8_t *capture_buf) {
       eps_out = result.r;
     }
 
-    printf("k = %f, Epsilon: %f\n", l1, eps_out);
+    //printf("k = %f, Epsilon: %f\n", l1, eps_out);
 
     double freq = sqrtf(l1*l1 + eps_out);
     freq *= SAMPLING_FREQ / (SAMPLE_COUNT);
-    printf("Frequency: %f Hz\n", freq);
+    //printf("Frequency: %f Hz\n", freq);
     
     kiss_fft_free(cfg);
-    return l1 * SAMPLING_FREQ / (double)(SAMPLE_COUNT);
+    return freq;
   
 }

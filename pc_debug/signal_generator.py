@@ -24,7 +24,7 @@ def write_c_header(filename, array_name, data):
         f.write("#endif // SINE_WAVE_H\n")
 
 def main():
-    frequency = 130.2137 # Frequency of the sine wave in Hz
+    frequency = 2.137 # Frequency of the sine wave in Hz
     sampling_frequency = 1000  # Sampling frequency in Hz
     num_samples = 2048  # Number of samples
 

@@ -24,7 +24,9 @@ volatile bool first_edge = true;
 
 
 uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
-
+uint dma_chan;
+uint8_t adc_dma_data[SAMPLE_COUNT];
+dma_channel_config cfg ;
 void dma_adc_capture(uint8_t *adc_dma_data);
 void config_all(void);
 
@@ -32,7 +34,6 @@ int main(){
     /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
     
-    uint8_t adc_dma_data[SAMPLE_COUNT];
 
     char voltage_str[14];  // 5 digits + null terminator
     char hz_str[15];
@@ -47,17 +48,17 @@ int main(){
     while(true){
         switch (state){
         case init:
-            //SSD1306_Clear();
-            while (1)
-            {
-                fft_frequency = fft_interpolation_process(sine_wave);
-                printf("F: %f\n", fft_frequency);
-                sleep_ms(1000);
-            }
+            SSD1306_Clear();
+            // while (1)
+            // {
+            //     fft_frequency = fft_interpolation_process(sine_wave);
+            //     printf("F: %f\n", fft_frequency);
+            //     sleep_ms(1000);
+            // }
             
-            // SSD1306_GotoXY (30, 20);
-            // SSD1306_Puts ("INIT", &Font_7x10, 1);
-            // SSD1306_UpdateScreen();
+            SSD1306_GotoXY (30, 20);
+            SSD1306_Puts ("INIT", &Font_7x10, 1);
+            SSD1306_UpdateScreen();
             break;
         case menu:
             //SSD1306_Clear();
@@ -83,8 +84,8 @@ int main(){
              // Calculate frequency
             //float frequency = calculate_frequency(adc_data, SAMPLE_COUNT,50);
             dma_adc_capture(adc_dma_data);
-            printf("Jedna z probek: %d\n", sine_wave[3]);
-            fft_frequency = fft_interpolation_process(sine_wave);
+            printf("Jedna z probek: %d\n", adc_dma_data[3]);
+            fft_frequency = fft_interpolation_process(adc_dma_data);
             printf("Frequency: %f\n", fft_frequency);
 
             // Convert raw value to voltage (assuming 3.3V reference)
@@ -124,15 +125,9 @@ int main(){
 }
 
 void dma_adc_capture(uint8_t *adc_dma_data) {
-    adc_set_clkdiv(0);
-    uint dma_chan = dma_claim_unused_channel(true);
-    dma_channel_config cfg = dma_channel_get_default_config(dma_chan);
 
-    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
-    channel_config_set_read_increment(&cfg, false);
-    channel_config_set_write_increment(&cfg, true);
-
-    channel_config_set_dreq(&cfg, DREQ_ADC);
+    adc_fifo_drain();
+    adc_run(false);
 
     dma_channel_configure(dma_chan, &cfg,
         adc_dma_data,    // dst
@@ -142,10 +137,8 @@ void dma_adc_capture(uint8_t *adc_dma_data) {
     );
 
     adc_run(true);
-
     dma_channel_wait_for_finish_blocking(dma_chan);
-    adc_run(false);
-    adc_fifo_drain();
+
 }
 
 void config_all(void){
@@ -167,5 +160,23 @@ void config_all(void){
         false,
         true
     );
+
+    adc_set_clkdiv(48000);
+    dma_chan = dma_claim_unused_channel(true);
+
+    dma_chan = dma_claim_unused_channel(true);
+    if (dma_chan == -1) {
+        while(1){
+            fprintf(stderr, "Failed to claim unused DMA channel\n");
+              sleep_ms(1000);
+        }
+    }
+    cfg = dma_channel_get_default_config(dma_chan);
+
+    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
+    channel_config_set_read_increment(&cfg, false);
+    channel_config_set_write_increment(&cfg, true);
+
+    channel_config_set_dreq(&cfg, DREQ_ADC);
 
 }
