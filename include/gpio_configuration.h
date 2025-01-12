@@ -6,6 +6,7 @@
 #include "../include/ssh1106.h"
 
 void button_callback(uint gpio, uint32_t events) {
+    printf("%d\n",gpio);
     if (gpio == OK_BUTTON && events == GPIO_IRQ_EDGE_FALL) {
         printf("OK button pressedx %d\n", gpio);
         state = calibration;
@@ -13,6 +14,7 @@ void button_callback(uint gpio, uint32_t events) {
     }else if(gpio == SWITCH_BUTTON && events == GPIO_IRQ_EDGE_FALL){
         printf("Switch button pressedx %d\n", gpio);
         state = measure;
+        unit = !unit;
         SSD1306_Clear();
     }else if(gpio == MENU_BUTTON && events == GPIO_IRQ_EDGE_FALL){
         printf("Menu button pressedx %d\n",gpio);

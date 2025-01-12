@@ -33,8 +33,7 @@ enum Menu menu_selection = mmeasure;
 char number_of_menu_options = 3;//measure,calibration,debug
 
 float thres = 1.5;
-
-
+volatile uint8_t unit =0;
 
 
 #endif

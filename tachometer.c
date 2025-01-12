@@ -28,6 +28,7 @@ uint dma_chan;
 uint8_t adc_dma_data[SAMPLE_COUNT];
 dma_channel_config cfg ;
 void dma_adc_capture(uint8_t *adc_dma_data);
+void debug_dma_adc_capture(uint8_t *adc_dma_data);
 void config_all(void);
 
 int main(){
@@ -44,21 +45,33 @@ int main(){
 
     printf("Zyje!!!\n");
     float fft_frequency = 0;
+    int16_t fft_revolution = 0;
     /// MAIN LOOP
     while(true){
         switch (state){
         case init:
             SSD1306_Clear();
-            // while (1)
-            // {
-            //     fft_frequency = fft_interpolation_process(sine_wave);
-            //     printf("F: %f\n", fft_frequency);
-            //     sleep_ms(1000);
-            // }
-            
-            SSD1306_GotoXY (30, 20);
-            SSD1306_Puts ("INIT", &Font_7x10, 1);
+            sprintf(hz_str, "%05d", 123);
+
+            SSD1306_GotoXY (5, 20);
+            SSD1306_Puts (hz_str, &Font_16x26, 1);
+
+            SSD1306_GotoXY (88, 26);
+            SSD1306_Puts ("RPM", &Font_11x18, 1);
             SSD1306_UpdateScreen();
+
+            sleep_ms(1000);
+            SSD1306_Clear();
+            sprintf(hz_str, "%06.2f", 12.34);
+
+            SSD1306_GotoXY (5, 20);
+            SSD1306_Puts (hz_str, &Font_16x26, 1);
+
+            SSD1306_GotoXY (105, 26);
+            SSD1306_Puts ("Hz", &Font_11x18, 1);
+            SSD1306_UpdateScreen();
+            sleep_ms(1000);
+
             break;
         case menu:
             //SSD1306_Clear();
@@ -69,36 +82,46 @@ int main(){
         case measure:
             tight_loop_contents();
 
-            int i = 0;
-            int N = 10;
-
-            float voltage = 0;
-
-            // raw = adc_read();
-            // voltage = raw * 3.3 / (1 << 12);
-            
-            // for (i; i < SAMPLE_COUNT; i++) {
-            //     adc_data[i] = adc_read();
-            //     sleep_us(SAMPLING_INTERVAL_US);
+            // dma_adc_capture(adc_dma_data);
+            // fft_frequency = fft_interpolation_process(adc_dma_data);
+            // if(fft_frequency < 1){
+            //     fft_frequency = 0.0;
             // }
-             // Calculate frequency
-            //float frequency = calculate_frequency(adc_data, SAMPLE_COUNT,50);
-            dma_adc_capture(adc_dma_data);
-            printf("Jedna z probek: %d\n", adc_dma_data[3]);
-            fft_frequency = fft_interpolation_process(adc_dma_data);
+
             printf("Frequency: %f\n", fft_frequency);
 
-            // Convert raw value to voltage (assuming 3.3V reference)
+            if(unit == 0){
+                fft_revolution = fft_frequency * 60;
+                sprintf(hz_str, "%05d", fft_revolution);
 
-            // Format the voltage as a 5-character string (e.g., "3.30V")
-            sprintf(voltage_str, "U = %4.2f V", voltage);
-            sprintf(hz_str, "f = %4.2f Hz", fft_frequency);
-            SSD1306_GotoXY (30, 20);
+                SSD1306_GotoXY (5, 20);
+                SSD1306_Puts (hz_str, &Font_16x26, 1);
+
+                SSD1306_GotoXY (88, 26);
+                SSD1306_Puts ("RPM", &Font_11x18, 1);
+            }
+
+            else{
+                sprintf(hz_str, "%06.2f", fft_frequency);
+
+                SSD1306_GotoXY (5, 20);
+                SSD1306_Puts (hz_str, &Font_16x26, 1);
+
+                SSD1306_GotoXY (105, 26);
+                SSD1306_Puts ("Hz", &Font_11x18, 1);
+            }
+
+            SSD1306_GotoXY (5, 50);
+            sprintf(voltage_str, "T= 2sek | Fs= 1kHz");
             SSD1306_Puts (voltage_str, &Font_7x10, 1);
-
-            SSD1306_GotoXY (30, 40);
-            SSD1306_Puts (hz_str, &Font_7x10, 1);
             SSD1306_UpdateScreen();
+
+            dma_adc_capture(adc_dma_data);
+            fft_frequency = fft_interpolation_process(adc_dma_data);
+            if(fft_frequency < 1){
+                fft_frequency = 0.0;
+            }
+            
             break;
         case calibration:
             //SSD1306_Clear();
@@ -107,14 +130,13 @@ int main(){
             SSD1306_UpdateScreen();
             break;
         case debug:
-            raw = adc_read();
-            sprintf(message,"%d\n\r\0",raw);
-            //send_string(message);
-            //printf("Done\n");
-            printf("%d\n\r",raw);
-            //dma_uart_send(message,10);
-            sleep_us(SAMPLING_INTERVAL_US);
-            //sleep_ms(10);
+
+            while(state == debug){
+                raw = adc_read();
+                printf("%d\n\r",raw);
+                
+            }
+
             break;
         
         default:
@@ -140,6 +162,35 @@ void dma_adc_capture(uint8_t *adc_dma_data) {
     dma_channel_wait_for_finish_blocking(dma_chan);
 
 }
+
+void debug_dma_adc_capture(uint8_t *adc_dma_data) {
+
+    adc_fifo_drain();
+    adc_run(false);
+
+    dma_channel_configure(dma_chan, &cfg,
+        &uart_get_hw(UART_ID)->dr,  // dst
+        &adc_hw->fifo,  // src
+        SAMPLE_COUNT,  // transfer count
+        true            // start immediately
+    );
+
+
+    while (true) {
+        adc_run(true);
+        dma_channel_wait_for_finish_blocking(dma_chan);
+
+        // for (int i = 0; i < SAMPLE_COUNT; i++) {
+        //     printf("%d\n", adc_dma_data[i]);
+        // }
+        adc_run(false);
+
+    }
+
+}
+
+
+
 
 void config_all(void){
     stdio_init_all();

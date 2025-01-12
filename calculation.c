@@ -59,6 +59,7 @@ float fft_interpolation_process(uint8_t *capture_buf) {
   kiss_fftr(cfg, fft_in, fft_out);
 
   float max_amplitude = 0;
+  float avr_amplitude = 0;
   int max_index = 0;
   for (int i = 0; i < 2*SAMPLE_COUNT / 2; i++) {
     float amplitude = sqrtf(fft_out[i].r * fft_out[i].r + fft_out[i].i * fft_out[i].i);
@@ -66,7 +67,18 @@ float fft_interpolation_process(uint8_t *capture_buf) {
       max_amplitude = amplitude;
       max_index = i;
     }
+    avr_amplitude += amplitude;
   }
+    avr_amplitude -= max_amplitude;
+    avr_amplitude /= (SAMPLE_COUNT-1);
+    printf("Max amplitude: %f\n", max_amplitude);
+    printf("Average amplitude: %f\n", avr_amplitude);
+
+    if(avr_amplitude * 15 > max_amplitude) {
+      kiss_fft_free(cfg);
+      return 0.0;
+    }
+
     kiss_fft_cpx X1, X2, X3;
     X1 = fft_out[max_index + 2];
     X2 = fft_out[max_index];
