@@ -8,6 +8,6 @@
 #define SAMPLING_INTERVAL_US (100)
 #pragma once
 float calculate_frequency(uint8_t *capture_buf);
-
+void precalculate_window();
 
 #endif

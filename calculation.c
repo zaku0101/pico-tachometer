@@ -3,21 +3,21 @@
 
 #include "include/pico/_kiss_fft_guts.h"
 #include <math.h>
-
+#include "include/global.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 #define P (3)
-#define SAMPLING_FREQ (1000.0)
-#define SAMPLE_COUNT (2048)
+// #define SAMPLING_FREQ (1000.0)
+// #define SAMPLE_COUNT (2048)
 
 static float window[SAMPLE_COUNT];
 
-static void precalculate_window() {
-    for (int i = 0; i < SAMPLE_COUNT; i++) {
-        window[i] = powf(sinf((M_PI * i) / (SAMPLE_COUNT - 1)), P);
+void precalculate_window() {
+    for (int i = 0; i < var_sample_count; i++) {
+        window[i] = powf(sinf((M_PI * i) / (var_sample_count - 1)), P);
     }
 }
 
@@ -40,7 +40,7 @@ static void fill_fft_input(uint8_t *buffer, kiss_fft_scalar *fft_in, int size) {
   for (int i = 0; i < size; i++) {
     fft_in[i] = ((float)buffer[i] - avg)*window[i];
   }
-  for (int i = size; i < 2 * SAMPLE_COUNT; i++) {
+  for (int i = size; i < 2 * var_sample_count; i++) {
     fft_in[i] = 0.0;
   }
 }
@@ -48,20 +48,20 @@ static void fill_fft_input(uint8_t *buffer, kiss_fft_scalar *fft_in, int size) {
 float calculate_frequency(uint8_t *capture_buf) {
   kiss_fft_scalar fft_in[2*SAMPLE_COUNT];
   kiss_fft_cpx fft_out[2*SAMPLE_COUNT];
-  kiss_fftr_cfg cfg = kiss_fftr_alloc(2*SAMPLE_COUNT, 0, NULL, NULL);
+  kiss_fftr_cfg cfg = kiss_fftr_alloc(2*var_sample_count, 0, NULL, NULL);
 
   if (!cfg) {
     printf("Failed to allocate FFT configuration\n");
     return 0.0;
   }
 
-  fill_fft_input(capture_buf, fft_in, SAMPLE_COUNT);
+  fill_fft_input(capture_buf, fft_in, var_sample_count);
   kiss_fftr(cfg, fft_in, fft_out);
 
   float max_amplitude = 0;
   float avr_amplitude = 0;
   int max_index = 0;
-  for (int i = 0; i < 2*SAMPLE_COUNT / 2; i++) {
+  for (int i = 0; i < 2*var_sample_count / 2; i++) {
     float amplitude = sqrtf(fft_out[i].r * fft_out[i].r + fft_out[i].i * fft_out[i].i);
     if (amplitude > max_amplitude) {
       max_amplitude = amplitude;
@@ -70,7 +70,7 @@ float calculate_frequency(uint8_t *capture_buf) {
     avr_amplitude += amplitude;
   }
     avr_amplitude -= max_amplitude;
-    avr_amplitude /= (SAMPLE_COUNT-1);
+    avr_amplitude /= (var_sample_count-1);
     printf("Max amplitude: %f\n", max_amplitude);
     printf("Average amplitude: %f\n", avr_amplitude);
 
@@ -106,8 +106,8 @@ float calculate_frequency(uint8_t *capture_buf) {
 
     //printf("k = %f, Epsilon: %f\n", l1, eps_out);
     double freq = sqrtf(l1*l1 + eps_out);
-    freq *= SAMPLING_FREQ / (SAMPLE_COUNT);
-    //printf("Frequency: %f Hz\n", freq);
+    freq *= (double)(SAMPLING_FREQ) / (double)(var_sample_count);
+    printf("Freq: %f Hz\n", freq);
     
     kiss_fft_free(cfg);
     return freq;

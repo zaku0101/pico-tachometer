@@ -4,12 +4,31 @@
 #include "pico/stdlib.h"
 #include "global.h"
 #include "../include/ssh1106.h"
+#include "calculation.h"
 
+int var_sample_count;
 void button_callback(uint gpio, uint32_t events) {
+
+    static int current = 0;
+    int test = time_us_32();
+    int time_diff = test - current;
+    printf("laset: %d, current:%d, diff %d\n",current, test, time_diff);
+    if (time_diff < 500000){
+        return;
+    }
     printf("%d\n",gpio);
     if (gpio == OK_BUTTON && events == GPIO_IRQ_EDGE_FALL) {
         printf("OK button pressedx %d\n", gpio);
-        state = calibration;
+        if(var_sample_count == SAMPLE_COUNT){
+            var_sample_count /=2;
+            sampling_time = 1;
+        }
+        else{
+            var_sample_count = SAMPLE_COUNT;
+            sampling_time = 2;
+        }
+        precalculate_window();
+        //state = calibration;
         SSD1306_Clear();
     }else if(gpio == SWITCH_BUTTON && events == GPIO_IRQ_EDGE_FALL){
         printf("Switch button pressedx %d\n", gpio);
@@ -21,6 +40,7 @@ void button_callback(uint gpio, uint32_t events) {
         state = debug;   
         SSD1306_Clear();
     }
+    current = test;
 }
 
 void gpio_init_all(void){
