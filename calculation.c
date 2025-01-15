@@ -45,7 +45,7 @@ static void fill_fft_input(uint8_t *buffer, kiss_fft_scalar *fft_in, int size) {
   }
 }
 
-float fft_interpolation_process(uint8_t *capture_buf) {
+float calculate_frequency(uint8_t *capture_buf) {
   kiss_fft_scalar fft_in[2*SAMPLE_COUNT];
   kiss_fft_cpx fft_out[2*SAMPLE_COUNT];
   kiss_fftr_cfg cfg = kiss_fftr_alloc(2*SAMPLE_COUNT, 0, NULL, NULL);
@@ -90,7 +90,8 @@ float fft_interpolation_process(uint8_t *capture_buf) {
     kiss_fft_cpx epsilon_div;
     epsilon.r = (m + 2) * ((m + 2 + 4 * l1) * X1.r  +  2 * m * X2.r  +  (m + 2 - 4 * l1) * X3.r);
     epsilon.i = (m + 2) * ((m + 2 + 4 * l1) * X1.i  +  2 * m * X2.i  +  (m + 2 - 4 * l1) * X3.i);
-
+    //podzielenie przez liczbe zespolona równe jest podzieleniu prze jej moduł
+    //oraz przemnożeniu przez sprzężenie zespolone
     epsilon_div.r =  4 * (X1.r - 2*X2.r + X3.r);
     epsilon_div.i = 4 * (X1.i - 2*X2.i + X3.i);
 
@@ -104,7 +105,6 @@ float fft_interpolation_process(uint8_t *capture_buf) {
     }
 
     //printf("k = %f, Epsilon: %f\n", l1, eps_out);
-
     double freq = sqrtf(l1*l1 + eps_out);
     freq *= SAMPLING_FREQ / (SAMPLE_COUNT);
     //printf("Frequency: %f Hz\n", freq);

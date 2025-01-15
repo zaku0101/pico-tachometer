@@ -71,12 +71,17 @@ int main(){
             SSD1306_Puts ("Hz", &Font_11x18, 1);
             SSD1306_UpdateScreen();
             sleep_ms(1000);
-
+            state = menu;
+            SSD1306_Clear();
             break;
         case menu:
             //SSD1306_Clear();
-            SSD1306_GotoXY (30, 20);
-            SSD1306_Puts ("MENU", &Font_7x10, 1);
+            SSD1306_GotoXY (30, 0);
+            SSD1306_Puts ("MENU", &Font_11x18, 1);
+            SSD1306_GotoXY (0, 40);
+            SSD1306_Puts ("Measure", &Font_7x10, 1);
+            SSD1306_GotoXY (40, 40);
+            SSD1306_Puts ("Debug", &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
         case measure:
@@ -117,7 +122,7 @@ int main(){
             SSD1306_UpdateScreen();
 
             dma_adc_capture(adc_dma_data);
-            fft_frequency = fft_interpolation_process(adc_dma_data);
+            fft_frequency = calculate_frequency(adc_dma_data);
             if(fft_frequency < 1){
                 fft_frequency = 0.0;
             }

@@ -34,7 +34,7 @@ class SerialPlotterApp:
         self.ax_time.set_xlabel("Sample")
         self.ax_time.set_ylabel("ADC Value")
         self.ax_time.grid()
-        self.ax_time.legend()
+        self.ax_time.legend(loc="upper right")
         self.ax_fft.set_title("Frequency Domain (FFT)")
         self.ax_fft.set_xlabel("Frequency (Hz)")
         self.ax_fft.set_ylabel("Magnitude")
