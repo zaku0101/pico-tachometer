@@ -136,11 +136,21 @@ int main(){
             break;
         case debug:
 
-            while(state == debug){
-                raw = adc_read();
-                printf("%d\n\r",raw);
+            // while(state == debug){
+            //     raw = adc_read();
+            //     printf("%d\n\r",raw);
                 
+            // }
+
+            dma_adc_capture(adc_dma_data);
+            fft_frequency = calculate_frequency(adc_dma_data);
+            if(fft_frequency < 1){
+                fft_frequency = 0.0;
             }
+            for (int i = 0; i < SAMPLE_COUNT; i++) {
+                printf("%d\n", adc_dma_data[i]);
+            }
+
 
             break;
         

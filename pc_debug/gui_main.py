@@ -129,7 +129,7 @@ class SerialPlotterApp:
                         self.data_queue.put(value)
                 except ValueError:
                     continue
-            #time.sleep(0.001)
+            
 
     def append_to_console(self, message):
         self.console_log.config(state=tk.NORMAL)
@@ -138,10 +138,12 @@ class SerialPlotterApp:
         self.console_log.config(state=tk.DISABLED)
 
     def plot_data(self):
+        counter = 0
         while self.running:
             new_data = []
             while not self.data_queue.empty():
                 new_data.append(self.data_queue.get())
+                counter += 1
 
             if new_data:
                 self.data.extend(new_data)
@@ -149,8 +151,10 @@ class SerialPlotterApp:
                     self.data = self.data[-self.num_samples:]
 
                 self.update_time_plot()
-                if self.fft_enabled:
+                print(counter)
+                if self.fft_enabled and (counter > 2048):
                     self.update_frequency_plot()
+                    counter = 0
 
             time.sleep(0.05)
 
@@ -161,6 +165,9 @@ class SerialPlotterApp:
         self.canvas.draw_idle()
 
     def update_frequency_plot(self):
+        mean_value = np.mean(self.data)
+        self.data = [x - mean_value for x in self.data]
+
         fft_data = np.fft.fft(self.data)
         freqs = np.fft.fftfreq(len(self.data), d=1/self.sampling_frequency)
         magnitude = np.abs(fft_data)[:len(fft_data)//2]
