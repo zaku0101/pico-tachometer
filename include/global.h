@@ -12,6 +12,8 @@
 #define SAMPLING_INTERVAL_US (100)
 #define SAMPLING_FREQ 1000 
 
+extern int var_sample_count;
+
 enum states{
     init,
     menu,
@@ -25,15 +27,16 @@ enum Menu{
     mdebug
 };
 
-volatile enum states state = init;
-char enter = 0;
-char button_next_value = 0;
-char button_enter_value = 0;
-enum Menu menu_selection = mmeasure;
-char number_of_menu_options = 3;//measure,calibration,debug
+extern volatile enum states state;
+extern char enter;
+extern char button_next_value;
+extern char button_enter_value;
+extern enum Menu menu_selection;
+extern char number_of_menu_options;//measure,calibration,debug
 
-float thres = 1.5;
-volatile uint8_t unit =0;
+extern float thres;
+extern volatile uint8_t unit;
+extern int sampling_time;
 
 
 #endif

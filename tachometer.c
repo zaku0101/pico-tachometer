@@ -31,7 +31,21 @@ void dma_adc_capture(uint8_t *adc_dma_data);
 void debug_dma_adc_capture(uint8_t *adc_dma_data);
 void config_all(void);
 
+    //global
+    int var_sample_count = SAMPLE_COUNT;
+    volatile enum states state = init;
+    char enter = 0;
+    char button_next_value = 0;
+    char button_enter_value = 0;
+    enum Menu menu_selection = mmeasure;
+    char number_of_menu_options = 3;//measure,calibration,debug
+    float thres = 1.5;
+    volatile uint8_t unit = 0;
+    int sampling_time = 2;
+
 int main(){
+
+
     /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
     
@@ -47,9 +61,12 @@ int main(){
     float fft_frequency = 0;
     int16_t fft_revolution = 0;
     /// MAIN LOOP
+    unit =0;
+
     while(true){
         switch (state){
         case init:
+
             SSD1306_Clear();
             sprintf(hz_str, "%05d", 123);
 
@@ -76,12 +93,12 @@ int main(){
             break;
         case menu:
             //SSD1306_Clear();
-            SSD1306_GotoXY (30, 0);
+            SSD1306_GotoXY (45, 0);
             SSD1306_Puts ("MENU", &Font_11x18, 1);
-            SSD1306_GotoXY (0, 40);
-            SSD1306_Puts ("Measure", &Font_7x10, 1);
-            SSD1306_GotoXY (40, 40);
-            SSD1306_Puts ("Debug", &Font_7x10, 1);
+            SSD1306_GotoXY (10, 40);
+            SSD1306_Puts ("Meas", &Font_7x10, 1);
+            SSD1306_GotoXY (90, 40);
+            SSD1306_Puts ("Debg", &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
         case measure:
@@ -117,10 +134,10 @@ int main(){
             }
 
             SSD1306_GotoXY (5, 50);
-            sprintf(voltage_str, "T= 2sek | Fs= 1kHz");
+            sprintf(voltage_str, "T= %dsek | Fs= 1kHz", sampling_time);
             SSD1306_Puts (voltage_str, &Font_7x10, 1);
             SSD1306_UpdateScreen();
-
+            printf("sample count %d", var_sample_count);
             dma_adc_capture(adc_dma_data);
             fft_frequency = calculate_frequency(adc_dma_data);
             if(fft_frequency < 1){
@@ -135,6 +152,9 @@ int main(){
             SSD1306_UpdateScreen();
             break;
         case debug:
+            SSD1306_GotoXY (30, 20);
+            SSD1306_Puts ("DEBUG MODE", &Font_16x26, 1);
+            SSD1306_UpdateScreen();
 
             // while(state == debug){
             //     raw = adc_read();
@@ -169,7 +189,7 @@ void dma_adc_capture(uint8_t *adc_dma_data) {
     dma_channel_configure(dma_chan, &cfg,
         adc_dma_data,    // dst
         &adc_hw->fifo,  // src
-        SAMPLE_COUNT,  // transfer count
+        var_sample_count,  // transfer count
         true            // start immediately
     );
 
