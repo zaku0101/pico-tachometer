@@ -26,7 +26,7 @@ static void initialize() {
     precalculate_window();
 }
 
-static float calculate_average(uint8_t *buffer, int size) {
+static float calculate_average(uint16_t *buffer, int size) {
   uint64_t sum = 0;
   for (int i = 0; i < size; i++) {
     sum += buffer[i];
@@ -35,7 +35,7 @@ static float calculate_average(uint8_t *buffer, int size) {
 }
 
 
-static void fill_fft_input(uint8_t *buffer, kiss_fft_scalar *fft_in, int size) {
+static void fill_fft_input(uint16_t *buffer, kiss_fft_scalar *fft_in, int size) {
   float avg = calculate_average(buffer, size);
   for (int i = 0; i < size; i++) {
     fft_in[i] = ((float)buffer[i] - avg)*window[i];
@@ -45,7 +45,7 @@ static void fill_fft_input(uint8_t *buffer, kiss_fft_scalar *fft_in, int size) {
   }
 }
 
-float calculate_frequency(uint8_t *capture_buf) {
+float calculate_frequency(uint16_t *capture_buf) {
   kiss_fft_scalar fft_in[2*SAMPLE_COUNT];
   kiss_fft_cpx fft_out[2*SAMPLE_COUNT];
   kiss_fftr_cfg cfg = kiss_fftr_alloc(2*var_sample_count, 0, NULL, NULL);

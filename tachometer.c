@@ -25,9 +25,9 @@ volatile bool first_edge = true;
 
 uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
 uint dma_chan;
-uint8_t adc_dma_data[SAMPLE_COUNT];
+uint16_t adc_dma_data[SAMPLE_COUNT];
 dma_channel_config cfg ;
-void dma_adc_capture(uint8_t *adc_dma_data);
+void dma_adc_capture(uint16_t *adc_dma_data);
 void debug_dma_adc_capture(uint8_t *adc_dma_data);
 void config_all(void);
 
@@ -167,7 +167,14 @@ int main(){
             if(fft_frequency < 1){
                 fft_frequency = 0.0;
             }
-            for (int i = 0; i < SAMPLE_COUNT; i++) {
+
+            // adc_run(true);
+            // uint16_t fifo_test = adc_fifo_get();
+            // adc_run(false);
+            // printf("%d\n",fifo_test);
+
+
+            for (int i = 0; i < var_sample_count; i++) {
                 printf("%d\n", adc_dma_data[i]);
             }
 
@@ -181,7 +188,7 @@ int main(){
     }    
 }
 
-void dma_adc_capture(uint8_t *adc_dma_data) {
+void dma_adc_capture(uint16_t *adc_dma_data) {
 
     adc_fifo_drain();
     adc_run(false);
@@ -197,33 +204,6 @@ void dma_adc_capture(uint8_t *adc_dma_data) {
     dma_channel_wait_for_finish_blocking(dma_chan);
 
 }
-
-void debug_dma_adc_capture(uint8_t *adc_dma_data) {
-
-    adc_fifo_drain();
-    adc_run(false);
-
-    dma_channel_configure(dma_chan, &cfg,
-        &uart_get_hw(UART_ID)->dr,  // dst
-        &adc_hw->fifo,  // src
-        SAMPLE_COUNT,  // transfer count
-        true            // start immediately
-    );
-
-
-    while (true) {
-        adc_run(true);
-        dma_channel_wait_for_finish_blocking(dma_chan);
-
-        // for (int i = 0; i < SAMPLE_COUNT; i++) {
-        //     printf("%d\n", adc_dma_data[i]);
-        // }
-        adc_run(false);
-
-    }
-
-}
-
 
 
 
@@ -244,11 +224,10 @@ void config_all(void){
         true,
         1,
         false,
-        true
+        false
     );
 
     adc_set_clkdiv(48000);
-    dma_chan = dma_claim_unused_channel(true);
 
     dma_chan = dma_claim_unused_channel(true);
     if (dma_chan == -1) {
@@ -259,7 +238,7 @@ void config_all(void){
     }
     cfg = dma_channel_get_default_config(dma_chan);
 
-    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_8);
+    channel_config_set_transfer_data_size(&cfg, DMA_SIZE_16);
     channel_config_set_read_increment(&cfg, false);
     channel_config_set_write_increment(&cfg, true);
 

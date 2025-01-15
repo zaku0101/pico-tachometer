@@ -13,7 +13,7 @@ void button_callback(uint gpio, uint32_t events) {
     int test = time_us_32();
     int time_diff = test - current;
     printf("laset: %d, current:%d, diff %d\n",current, test, time_diff);
-    if (time_diff < 500000){
+    if (time_diff < 200000){
         return;
     }
     printf("%d\n",gpio);
