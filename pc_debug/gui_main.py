@@ -151,7 +151,6 @@ class SerialPlotterApp:
                     self.data = self.data[-self.num_samples:]
 
                 self.update_time_plot()
-                print(counter)
                 if self.fft_enabled and (counter > 2048):
                     self.update_frequency_plot()
                     counter = 0
