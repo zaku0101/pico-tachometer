@@ -45,10 +45,6 @@ inline float calculate_frequency(uint16_t *data, size_t count, uint16_t delta_mi
     }
     bins_diff = sum / (float)k;
     frequency = count*((float)SAMPLING_INTERVAL_US + 1/48000.0) / (bins_diff);
-    // Calculate frequency
-    //float time_interval = (float)(count * ((float)SAMPLING_INTERVAL_US + 1/48000.0)) / 1e6; // Convert microseconds to seconds
-    //frequency = (crossings) / time_interval;
-
     return frequency;
 }
 

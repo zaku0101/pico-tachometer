@@ -25,16 +25,11 @@ for duty_cycle in duty_cycles:
     print(np.average(pwm_signal))
     pwm_signal *= window
     yf = np.fft.fft(pwm_signal)
-    #yf = np.fft.fftshift(yf)
-    #print(len(yf))
-    #sprint(len(yff))
     xf = np.linspace(0.0, sampling_rate/(4*duration), int(len(yf)/2))
-    #yf = np.fft.fftshift(yf)
     plt.subplot(len(duty_cycles), 1, duty_cycles.index(duty_cycle) + 1)
     plt.plot(xf, np.abs(yf[:len(xf)]))
     plt.title(f'Duty Cycle: {duty_cycle}%')
     plt.ylabel('Amplitude')
     plt.grid()
-   # plt.plot(xf, np.abs(yf), label=f'Duty Cycle: {duty_cycle}%')
 
 plt.show()

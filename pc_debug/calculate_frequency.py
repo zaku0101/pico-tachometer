@@ -77,41 +77,6 @@ low_pass_single_pole = LowPassSinglePole(decay)
 # output sample y of the filtered signal:
 # y = low_pass_single_pole.filter(x)
 
-FILTER_TAP_NUM = 31
-
-# coefficients= [
-#    -96955808568.91116,
-#   273387046642.8124,
-#   510724163306.0944,
-#   490190243486.0663,
-#   31417435894.008507,
-#   -563122797532.523,
-#   -600504184176.4781,
-#   -489518701417.9829,
-#   68743438643.43535,
-#   191351321424.93033,
-#   -46615243951.24134,
-#   -457851694837.70386,
-#   -550093000871.2968,
-#   -123270391291.70703,
-#   792405090913.8821,
-#   1139426164674.4077,
-#   792405090913.8821,
-#   -123270391291.70703,
-#   -550093000871.2968,
-#   -457851694837.70386,
-#   -46615243951.24134,
-#   191351321424.93033,
-#   68743438643.43535,
-#   -489518701417.9829,
-#   -600504184176.4781,
-#   -563122797532.523,
-#   31417435894.008507,
-#   490190243486.0663,
-#   510724163306.0944,
-#   273387046642.8124,
-#   -96955808568.91116]
-
 FILTER_TAP_NUM = 204
 coefficients = [
   -2.446073790147e-07,-0.000149028749508,-0.0002848829353408,-0.0005246931507749,
@@ -285,20 +250,9 @@ def freq_fft_interpolate(input_signal, fp, N):
     output_signal = np.fft.fft(output_signal)
     fftabs = np.abs(output_signal)
 
-    # # Display only the first half of the spectrum
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(fftabs[:n_samples_out // 2], 'b-', linewidth=1.2, label='fft')
-    # plt.title('FFT Spectrum (First Half)')
-    # plt.xlabel('Frequency Bin')
-    # plt.ylabel('Magnitude')
-    # plt.legend()
-    # plt.grid(True)
     # Find the sample with the maximum spectrum value
     l = np.argmax(fftabs[:n_samples_out // 2])
-    # print(f"l: {l}")
     l1 = l/2
-    # l = np.int64(l/2)
-    # Interpolate the spectrum
     epsilon = (m+2)*((m+2+4*l1)*output_signal[l+2] + 2*m*output_signal[l] + (m+2-4*l1)*output_signal[l-2])/(4*(output_signal[l+2] + output_signal[l-2] - 2*output_signal[l]))
     lamb = np.sqrt(l**2 + np.real(epsilon))
 

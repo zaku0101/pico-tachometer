@@ -45,24 +45,19 @@ void config_all(void);
 
 int main(){
 
-
-    /// LOCAL SHIT
     uint16_t adc_data[SAMPLE_COUNT];
-    
-
     char voltage_str[14];  // 5 digits + null terminator
     char hz_str[15];
     char message[24];
     uint16_t raw = 0;
+
     /// INIT
     config_all();
-
-    printf("Zyje!!!\n");
     float fft_frequency = 0;
     int16_t fft_revolution = 0;
-    /// MAIN LOOP
     unit =0;
 
+    /// MAIN LOOP
     while(true){
         switch (state){
         case init:
@@ -92,7 +87,6 @@ int main(){
             SSD1306_Clear();
             break;
         case menu:
-            //SSD1306_Clear();
             SSD1306_GotoXY (45, 0);
             SSD1306_Puts ("MENU", &Font_11x18, 1);
             SSD1306_GotoXY (10, 40);
@@ -103,12 +97,6 @@ int main(){
             break;
         case measure:
             tight_loop_contents();
-
-            // dma_adc_capture(adc_dma_data);
-            // fft_frequency = fft_interpolation_process(adc_dma_data);
-            // if(fft_frequency < 1){
-            //     fft_frequency = 0.0;
-            // }
 
             printf("Frequency: %f\n", fft_frequency);
 
@@ -143,24 +131,17 @@ int main(){
             if(fft_frequency < 1){
                 fft_frequency = 0.0;
             }
-            
             break;
         case calibration:
-            //SSD1306_Clear();
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("CALI", &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
+
         case debug:
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("DEBUG MODE", &Font_16x26, 1);
             SSD1306_UpdateScreen();
-
-            // while(state == debug){
-            //     raw = adc_read();
-            //     printf("%d\n\r",raw);
-                
-            // }
 
             dma_adc_capture(adc_dma_data);
             fft_frequency = calculate_frequency(adc_dma_data);
@@ -168,23 +149,14 @@ int main(){
                 fft_frequency = 0.0;
             }
 
-            // adc_run(true);
-            // uint16_t fifo_test = adc_fifo_get();
-            // adc_run(false);
-            // printf("%d\n",fifo_test);
-
-
             for (int i = 0; i < var_sample_count; i++) {
                 printf("%d\n", adc_dma_data[i]);
             }
-
-
             break;
         
         default:
             break;
         };
-        //sleep_ms(1);
     }    
 }
 
@@ -205,8 +177,6 @@ void dma_adc_capture(uint16_t *adc_dma_data) {
 
 }
 
-
-
 void config_all(void){
     stdio_init_all();
     setup_uart();
@@ -217,7 +187,6 @@ void config_all(void){
     adc_init();   
     adc_gpio_init(ADC_PIN);
     adc_select_input(0);
-    
     
     adc_fifo_setup(
         true,
@@ -241,7 +210,5 @@ void config_all(void){
     channel_config_set_transfer_data_size(&cfg, DMA_SIZE_16);
     channel_config_set_read_increment(&cfg, false);
     channel_config_set_write_increment(&cfg, true);
-
     channel_config_set_dreq(&cfg, DREQ_ADC);
-
 }

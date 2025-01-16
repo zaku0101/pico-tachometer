@@ -10,8 +10,6 @@
 #endif
 
 #define P (3)
-// #define SAMPLING_FREQ (1000.0)
-// #define SAMPLE_COUNT (2048)
 
 static float window[SAMPLE_COUNT];
 
@@ -104,7 +102,6 @@ float calculate_frequency(uint16_t *capture_buf) {
       eps_out = result.r;
     }
 
-    //printf("k = %f, Epsilon: %f\n", l1, eps_out);
     double freq = sqrtf(l1*l1 + eps_out);
     freq *= (double)(SAMPLING_FREQ) / (double)(var_sample_count);
     printf("Freq: %f Hz\n", freq);

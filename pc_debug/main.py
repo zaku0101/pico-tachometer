@@ -62,8 +62,6 @@ try:
             # Redraw the plot
             fig.canvas.flush_events()
 
-        #time.sleep(0.1)  # Adjust this sleep time to control update rate
-
 except KeyboardInterrupt:
     print("Exiting program.")
 finally:

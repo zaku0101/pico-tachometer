@@ -3,7 +3,6 @@
 
 #include <inttypes.h>
 #include <stdio.h>
-//#include "global.h"
 #include "pico/fft.h"
 #define SAMPLING_INTERVAL_US (100)
 #pragma once
