@@ -18,37 +18,15 @@
 #include "include/ssh1106.h"
 #include "include/sine_wave.h"
 
-volatile uint32_t start_time = 0;
-volatile uint32_t end_time = 0;
-volatile bool first_edge = true;
-
-
-uint16_t adc_buffer[SAMPLE_COUNT]; // Buffer to store ADC data
 uint dma_chan;
 uint16_t adc_dma_data[SAMPLE_COUNT];
 dma_channel_config cfg ;
-void dma_adc_capture(uint16_t *adc_dma_data);
-void debug_dma_adc_capture(uint8_t *adc_dma_data);
+
 void config_all(void);
 
-    //global
-    int var_sample_count = SAMPLE_COUNT;
-    volatile enum states state = init;
-    char enter = 0;
-    char button_next_value = 0;
-    char button_enter_value = 0;
-    enum Menu menu_selection = mmeasure;
-    char number_of_menu_options = 3;//measure,calibration,debug
-    float thres = 1.5;
-    volatile uint8_t unit = 0;
-    int sampling_time = 2;
-
 int main(){
-
-    uint16_t adc_data[SAMPLE_COUNT];
-    char voltage_str[14];  // 5 digits + null terminator
-    char hz_str[15];
-    char message[24];
+    char info_str[14];  // 5 digits + null terminator
+    char display_str[15];
     uint16_t raw = 0;
 
     /// INIT
@@ -63,10 +41,10 @@ int main(){
         case init:
 
             SSD1306_Clear();
-            sprintf(hz_str, "%05d", 123);
+            sprintf(display_str, "%05d", 123);
 
             SSD1306_GotoXY (5, 20);
-            SSD1306_Puts (hz_str, &Font_16x26, 1);
+            SSD1306_Puts (display_str, &Font_16x26, 1);
 
             SSD1306_GotoXY (88, 26);
             SSD1306_Puts ("RPM", &Font_11x18, 1);
@@ -74,10 +52,10 @@ int main(){
 
             sleep_ms(1000);
             SSD1306_Clear();
-            sprintf(hz_str, "%06.2f", 12.34);
+            sprintf(display_str, "%06.2f", 12.34);
 
             SSD1306_GotoXY (5, 20);
-            SSD1306_Puts (hz_str, &Font_16x26, 1);
+            SSD1306_Puts (display_str, &Font_16x26, 1);
 
             SSD1306_GotoXY (105, 26);
             SSD1306_Puts ("Hz", &Font_11x18, 1);
@@ -86,6 +64,7 @@ int main(){
             state = menu;
             SSD1306_Clear();
             break;
+            
         case menu:
             SSD1306_GotoXY (45, 0);
             SSD1306_Puts ("MENU", &Font_11x18, 1);
@@ -95,43 +74,43 @@ int main(){
             SSD1306_Puts ("Debg", &Font_7x10, 1);
             SSD1306_UpdateScreen();
             break;
+
         case measure:
             tight_loop_contents();
 
-            printf("Frequency: %f\n", fft_frequency);
-
             if(unit == 0){
                 fft_revolution = fft_frequency * 60;
-                sprintf(hz_str, "%05d", fft_revolution);
+                sprintf(display_str, "%05d", fft_revolution);
 
                 SSD1306_GotoXY (5, 20);
-                SSD1306_Puts (hz_str, &Font_16x26, 1);
+                SSD1306_Puts (display_str, &Font_16x26, 1);
 
                 SSD1306_GotoXY (88, 26);
                 SSD1306_Puts ("RPM", &Font_11x18, 1);
             }
 
             else{
-                sprintf(hz_str, "%06.2f", fft_frequency);
+                sprintf(display_str, "%06.2f", fft_frequency);
 
                 SSD1306_GotoXY (5, 20);
-                SSD1306_Puts (hz_str, &Font_16x26, 1);
+                SSD1306_Puts (display_str, &Font_16x26, 1);
 
                 SSD1306_GotoXY (105, 26);
                 SSD1306_Puts ("Hz", &Font_11x18, 1);
             }
 
             SSD1306_GotoXY (5, 50);
-            sprintf(voltage_str, "T= %dsek | Fs= 1kHz", sampling_time);
-            SSD1306_Puts (voltage_str, &Font_7x10, 1);
+            sprintf(info_str, "T= %dsek | Fs= 1kHz", sampling_time);
+            SSD1306_Puts (info_str, &Font_7x10, 1);
             SSD1306_UpdateScreen();
             printf("sample count %d", var_sample_count);
-            dma_adc_capture(adc_dma_data);
+            dma_adc_capture(adc_dma_data, dma_chan, cfg);
             fft_frequency = calculate_frequency(adc_dma_data);
             if(fft_frequency < 1){
                 fft_frequency = 0.0;
             }
             break;
+
         case calibration:
             SSD1306_GotoXY (30, 20);
             SSD1306_Puts ("CALI", &Font_7x10, 1);
@@ -143,7 +122,7 @@ int main(){
             SSD1306_Puts ("DEBUG MODE", &Font_16x26, 1);
             SSD1306_UpdateScreen();
 
-            dma_adc_capture(adc_dma_data);
+            dma_adc_capture(adc_dma_data, dma_chan, cfg);
             fft_frequency = calculate_frequency(adc_dma_data);
             if(fft_frequency < 1){
                 fft_frequency = 0.0;
@@ -160,22 +139,7 @@ int main(){
     }    
 }
 
-void dma_adc_capture(uint16_t *adc_dma_data) {
 
-    adc_fifo_drain();
-    adc_run(false);
-
-    dma_channel_configure(dma_chan, &cfg,
-        adc_dma_data,    // dst
-        &adc_hw->fifo,  // src
-        var_sample_count,  // transfer count
-        true            // start immediately
-    );
-
-    adc_run(true);
-    dma_channel_wait_for_finish_blocking(dma_chan);
-
-}
 
 void config_all(void){
     stdio_init_all();

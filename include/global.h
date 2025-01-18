@@ -12,6 +12,8 @@
 #define SAMPLING_INTERVAL_US (100)
 #define SAMPLING_FREQ 1000 
 
+#include <stdint.h>
+
 extern int var_sample_count;
 
 enum states{

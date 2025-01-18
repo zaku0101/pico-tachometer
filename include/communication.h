@@ -29,4 +29,22 @@ void send_string(const char *str) {
     uart_puts(UART_ID, str);
 }
 
+
+void dma_adc_capture(uint16_t *adc_dma_data, uint dma_chan, dma_channel_config cfg){
+
+    adc_fifo_drain();
+    adc_run(false);
+
+    dma_channel_configure(dma_chan, &cfg,
+        adc_dma_data,    // dst
+        &adc_hw->fifo,  // src
+        var_sample_count,  // transfer count
+        true            // start immediately
+    );
+
+    adc_run(true);
+    dma_channel_wait_for_finish_blocking(dma_chan);
+
+}
+
 #endif

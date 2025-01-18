@@ -6,7 +6,7 @@
 #include "../include/ssh1106.h"
 #include "calculation.h"
 
-int var_sample_count;
+
 void button_callback(uint gpio, uint32_t events) {
 
     static int current = 0;

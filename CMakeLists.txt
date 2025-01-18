@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
   calculation.c
   kiss_fft.c
   kiss_fftr.c
+  global.c
 )
 
 pico_add_extra_outputs(${PROJECT_NAME})
