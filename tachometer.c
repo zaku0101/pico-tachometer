@@ -1,3 +1,13 @@
+/*
+Tytuł: tachometer.c
+Przeznaczenie kodu: Główny kod mikrokontrolera
+Wersja: 1.0 stabilna
+Autor: Jakub Żak
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>

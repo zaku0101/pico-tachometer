@@ -1,3 +1,13 @@
+/*
+Tytuł: global.h
+Przeznaczenie kodu: Kod zawierający zmienne globalne
+Wersja: 1.0 stabilna
+Autor: Jakub Żak
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
 #ifndef __GLOBAL_H
 #define __GLOBAL_H
 

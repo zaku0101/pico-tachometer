@@ -1,3 +1,11 @@
+/*
+Tytuł: ssh1106.h
+Przeznaczenie kodu: Składowa kodu sterownika wyświetlacza
+Wersja: 1.0 stabilna
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
 #ifndef SSD1306_H
 #define SSD1306_H 
 

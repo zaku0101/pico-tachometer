@@ -1,3 +1,12 @@
+	/*
+	Tytuł: gpio_configuration.h
+	Przeznaczenie kodu: Kod odpowiedzialny za konfigurację pinów GPIO
+	Wersja: 1.0 stabilna
+	Data: 18.01.2025
+	Wymagania sprzętowe: Windows 10
+	*/
+
+
 #ifndef __GPIO_CONF_H
 #define __GPIO_CONF_H
 

@@ -1,3 +1,13 @@
+# /*
+# Tytuł: requirements.txt
+# Przeznaczenie kodu: Plik konfigurujący aplikację debugującą
+# Wersja: 1.0 stabilna
+# Autor: Michał Boguski
+# Data: 18.01.2025
+# Wymagania sprzętowe: Windows 10
+# */
+
+
 numpy
 matplotlib
 joblib

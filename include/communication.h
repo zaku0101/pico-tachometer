@@ -1,3 +1,13 @@
+/*
+Tytuł: communication.h
+Przeznaczenie kodu: Składowa kodu mikrokontrolera odpowiedzialna za komunikację
+Wersja: 1.0 stabilna
+Autor: Jakub Żak
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
 #ifndef __COMMUNICATON_H
 #define __COMMUNICATON_H
 

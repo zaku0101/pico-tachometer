@@ -1,4 +1,13 @@
 /*
+Tytuł: ssh1106.c
+Przeznaczenie kodu: Składowa kodu sterownika wyświetlacza
+Wersja: 1.0 stabilna
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
+/*
 
 MIT License
 

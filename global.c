@@ -1,3 +1,12 @@
+/*
+Tytuł: global.c
+Przeznaczenie kodu: Składowa kodu sterownika wyświetlacza
+Wersja: 1.0 stabilna
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
 #include "include/global.h"
 
 int var_sample_count = SAMPLE_COUNT;

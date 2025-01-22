@@ -1,3 +1,13 @@
+/*
+Tytuł: calculation.c
+Przeznaczenie kodu: Składowa kodu obliczającego prędkość obrotową
+Wersja: 1.0 stabilna
+Autor: Michał Boguski
+Data: 18.01.2025
+Wymagania sprzętowe: Windows 10
+*/
+
+
 #include "include/pico/kiss_fftr.h"
 #include "include/calculation.h"
 

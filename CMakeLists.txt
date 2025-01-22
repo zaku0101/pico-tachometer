@@ -1,3 +1,13 @@
+# /*
+# Tytuł: CMakeLists.txt
+# Przeznaczenie kodu: Plik konfigurujący budowanie projektu
+# Wersja: 1.0 stabilna
+# Autor: Jakub Żak
+# Data: 18.01.2025
+# Wymagania sprzętowe: Windows 10
+# */
+
+
 cmake_minimum_required(VERSION 3.12)
 
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)

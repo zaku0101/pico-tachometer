@@ -1,3 +1,13 @@
+# /*
+# Tytuł: gui_main.py
+# Przeznaczenie kodu: Aplikacja debugująca do wizualizacji danych z mikrokontrolera
+# Wersja: 1.0 stabilna
+# Autor: Michał Boguski
+# Data: 18.01.2025
+# Wymagania sprzętowe: Windows 10
+# */
+
+
 import serial
 import threading
 import time

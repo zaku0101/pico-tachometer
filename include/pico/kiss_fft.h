@@ -1,3 +1,12 @@
+	/*
+	Tytuł: kiss_fft.h
+	Przeznaczenie kodu: Składowa kodu obliczającego fft
+	Wersja: 1.0 stabilna
+	Data: 18.01.2025
+	Wymagania sprzętowe: Windows 10
+	*/
+
+
 /*
  *  Copyright (c) 2003-2010, Mark Borgerding. All rights reserved.
  *  This file is part of KISS FFT - https://github.com/mborgerding/kissfft
